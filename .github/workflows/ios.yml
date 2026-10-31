@@ -1,0 +1,84 @@
+name: PA3 - Compilar y sacar capturas
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  capturas:
+    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        app:
+          - { dir: Q4_EventPlanner, name: EventPlanner }
+          - { dir: Q5_MovieExplorer, name: MovieExplorer }
+          - { dir: Q6_LifestyleHub, name: LifestyleHub }
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar XcodeGen
+        run: brew install xcodegen
+
+      - name: Generar proyecto Xcode
+        working-directory: ${{ matrix.app.dir }}
+        run: xcodegen generate
+
+      - name: Subir proyecto Xcode empaquetado
+        uses: actions/upload-artifact@v4
+        with:
+          name: proyecto-${{ matrix.app.name }}
+          path: ${{ matrix.app.dir }}
+
+      - name: Elegir simulador de iPhone
+        id: sim
+        run: |
+          UDID=$(xcrun simctl list devices available | grep "iPhone" | head -1 | grep -oE '[0-9A-F]{8}(-[0-9A-F]{4}){3}-[0-9A-F]{12}')
+          echo "Simulador: $UDID"
+          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+
+      - name: Arrancar simulador y agregar fotos de ejemplo
+        run: |
+          xcrun simctl boot "${{ steps.sim.outputs.udid }}" || true
+          xcrun simctl bootstatus "${{ steps.sim.outputs.udid }}" -b
+          xcrun simctl addmedia "${{ steps.sim.outputs.udid }}" assets/foto1.jpg assets/foto2.jpg assets/foto3.jpg
+
+      - name: Compilar y ejecutar pruebas de UI
+        working-directory: ${{ matrix.app.dir }}
+        run: |
+          rm -rf "$RUNNER_TEMP/result.xcresult"
+          xcodebuild test \
+            -project ${{ matrix.app.name }}.xcodeproj \
+            -scheme ${{ matrix.app.name }} \
+            -destination "id=${{ steps.sim.outputs.udid }}" \
+            -resultBundlePath "$RUNNER_TEMP/result.xcresult" \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Exportar capturas
+        if: always()
+        run: |
+          mkdir -p capturas
+          xcrun xcresulttool export attachments --path "$RUNNER_TEMP/result.xcresult" --output-path capturas || true
+          python3 - <<'PY'
+          import json, os, shutil
+          d = 'capturas'
+          try:
+              manifest = json.load(open(os.path.join(d, 'manifest.json')))
+              for test in manifest:
+                  for a in test.get('attachments', []):
+                      src = os.path.join(d, a['exportedFileName'])
+                      name = a.get('suggestedHumanReadableName') or a['exportedFileName']
+                      if os.path.exists(src):
+                          shutil.copy(src, os.path.join(d, name))
+                          os.remove(src)
+          except Exception as e:
+              print('No se pudieron renombrar las capturas:', e)
+          PY
+          ls -la capturas
+
+      - name: Subir capturas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: capturas-${{ matrix.app.name }}
+          path: capturas
