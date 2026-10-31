@@ -1,0 +1,39 @@
+name: LifestyleHub
+options:
+  bundleIdPrefix: pe.isil.pa3
+  deploymentTarget:
+    iOS: "17.0"
+targets:
+  LifestyleHub:
+    type: application
+    platform: iOS
+    sources: [Sources]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: pe.isil.pa3.lifestylehub
+        SWIFT_VERSION: "5.0"
+        GENERATE_INFOPLIST_FILE: YES
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        INFOPLIST_KEY_CFBundleDisplayName: LifestyleHub
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait
+  LifestyleHubUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [UITests]
+    dependencies:
+      - target: LifestyleHub
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: pe.isil.pa3.lifestylehub.uitests
+        SWIFT_VERSION: "5.0"
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  LifestyleHub:
+    build:
+      targets:
+        LifestyleHub: all
+    test:
+      targets:
+        - LifestyleHubUITests
