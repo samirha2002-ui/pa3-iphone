@@ -23,7 +23,7 @@ final class ScreenshotTests: XCTestCase {
         if element.waitForExistence(timeout: 6) { element.tap() }
     }
 
-       func hideKeyboard() {
+        func hideKeyboard() {
         let cont = app.buttons["Continue"]
         if cont.waitForExistence(timeout: 2) { cont.tap() }
         let key = app.keyboards.buttons.matching(NSPredicate(format: "label ==[c] %@ OR label ==[c] %@", "return", "done")).firstMatch
