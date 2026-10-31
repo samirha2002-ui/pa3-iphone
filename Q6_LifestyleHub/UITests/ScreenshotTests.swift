@@ -85,8 +85,8 @@ final class ScreenshotTests: XCTestCase {
         tap(btn("Elegir imagen"))
         Thread.sleep(forTimeInterval: 3)
         shot("11_selector_de_fotos")
-        let photo = app.scrollViews.images.firstMatch
-        if photo.waitForExistence(timeout: 8) { photo.tap() }
+        let photo = app.images.matching(NSPredicate(format: "label BEGINSWITH[c] %@", "Photo")).firstMatch
+        if photo.waitForExistence(timeout: 8), photo.isHittable { photo.tap() }
         shot("12_imagen_seleccionada", wait: 3)
     }
 
