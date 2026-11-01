@@ -67,9 +67,11 @@ final class ScreenshotTests: XCTestCase {
         // Editar el primer evento
         tap(app.cells.element(boundBy: 0))
         let t = field("Título")
-        if t.waitForExistence(timeout: 5) {
-            t.coordinate(withNormalizedOffset: CGVector(dx: 0.98, dy: 0.5)).tap()
-            t.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 40) + "Cumpleaños de Ana (editado)")
+               if t.waitForExistence(timeout: 5) {
+            t.coordinate(withNormalizedOffset: CGVector(dx: 0.75, dy: 0.5)).tap()
+            if app.keyboards.element.waitForExistence(timeout: 3) {
+                t.typeText(" (editado)")
+            }
             hideKeyboard()
         }
         shot("04_pantalla_edicion")
