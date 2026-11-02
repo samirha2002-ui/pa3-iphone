@@ -44,7 +44,6 @@ final class ScreenshotTests: XCTestCase {
         hideKeyboard()
     }
 
-    // Se ejecutan en orden alfabético: A, B, C, D, E
     func testA_Actividades() {
         app.launch()
         shot("01_actividades_vacio")
@@ -66,7 +65,6 @@ final class ScreenshotTests: XCTestCase {
         tap(btn("Eliminar"))
         shot("06_lista_tras_eliminar")
 
-        // Persistencia: cerrar la app y abrirla de nuevo
         app.terminate()
         app.launch()
         shot("07_persistencia_tras_cerrar")
@@ -85,9 +83,11 @@ final class ScreenshotTests: XCTestCase {
         tap(btn("Elegir imagen"))
         Thread.sleep(forTimeInterval: 3)
         shot("11_selector_de_fotos")
-        let photo = app.images.matching(NSPredicate(format: "label BEGINSWITH[c] %@", "Photo")).firstMatch
-        if photo.waitForExistence(timeout: 8), photo.isHittable { photo.tap() }
-        shot("12_imagen_seleccionada", wait: 3)
+        
+        Thread.sleep(forTimeInterval: 2)
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.16, dy: 0.47)).tap()
+        Thread.sleep(forTimeInterval: 3)
+        shot("12_imagen_seleccionada", wait: 2)
     }
 
     func testC_Personalizacion() {
@@ -101,7 +101,11 @@ final class ScreenshotTests: XCTestCase {
         shot("13_personalizacion_programar_actividad")
 
         let well = app.colorWells.firstMatch
-        if well.waitForExistence(timeout: 4) { well.tap() } else { tap(btn("Color del tema")) }
+        if well.waitForExistence(timeout: 4) {
+            well.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
+        } else {
+            tap(btn("Color del tema"))
+        }
         shot("14_selector_de_color", wait: 2)
     }
 
